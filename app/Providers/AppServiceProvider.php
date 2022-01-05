@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Database\Schema\Builder as SchemaBuilder;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -23,6 +24,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        SchemaBuilder::defaultStringLength(191);
     }
 }
