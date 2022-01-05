@@ -16,18 +16,15 @@ class MobileController extends Controller
         // return $request->all();
 
         $validator = Validator::make($request->all(),[
-            'first_name'=> 'required|min:3',
-            'last_name'=> 'required|min:3',
+            'name'=> 'required|min:3',
             'email' => 'required|email:rfc,dns|unique:users,email',
             'username' => 'required|min:3|unique:users,username',
             'password' => 'required|min:6',
             'c_password' => 'required|same:password',
             'picture' => 'mimes:jpeg,bmp,png,jpg|max:5120',
         ], [
-            'first_name.required' => 'Please enter your First Name.',
-            'first_name.min' => 'First name must be at least 3 characters.',
-            'last_name.required' => 'Please enter your Last Name.',
-            'last_name.min' => 'Last name must be at least 3 characters.',
+            'name.required' => 'Please enter your Name.',
+            'name.min' => 'Name must be at least 3 characters.',
             'email.required' => 'Please enter your Email.',
             'email.unique' => 'Email is already registered.',
             'email.email' => 'Email is invalid.',
@@ -53,8 +50,7 @@ class MobileController extends Controller
         else
         {
             $var = new User;
-            $var->first_name = $request->first_name;
-            $var->last_name = $request->last_name;
+            $var->name = $request->name;
             $var->email = $request->email;
             $var->username = $request->username;
             $var->password = $request->password;
@@ -169,6 +165,116 @@ class MobileController extends Controller
             $str['status']=true;
             $str['message']="USER LOG OUT SUCCESSFULL";
             return $str;
+        }
+    }
+
+    public function profile(request $request){
+
+        $vbl = User::find($request->user_id);
+        if(empty($vbl))
+        {
+            $str['status']=false;
+            $str['message']="STUDENT PROFILE NOT FOUND";
+            return $str;
+        }
+        else
+        {
+            $str['status']=true;
+            $str['message']="STUDENT PROFILE SHOWN";
+            $str['data']=$vbl;
+            return $str;
+        }
+    }
+
+    public function profile_updated(Request $request)
+    {
+        $validator = Validator::make($request->all(),[
+            'user_id'=> 'required|numeric|exists:users,id',
+            'name'=> 'required|min:3',
+            'picture' => 'mimes:jpeg,bmp,png,jpg|max:5120',
+
+        ], [
+            'name.required' => 'Please enter your Name.',
+            'name.min' => 'Name must be at least 3 characters.',
+            'picture.mimes' => 'Picture Is Not Valid.',
+            ]);
+        if ($validator->fails())
+        {
+            $str['status']=false;
+            $error=$validator->errors()->toArray();
+            foreach($error as $x_value){
+                $err[]=$x_value[0];
+            }
+             $str['message'] =$err['0'];
+            // $str['data'] = $validator->errors()->toArray();
+            return $str;
+        }
+        else
+        {
+            $var = User::find($request->user_id);
+            $var->name = $request->name;
+
+            if($request->picture)
+            {
+                $vbl3 = rand(100000000000000,999999999999999);
+                $vbl4 = File::extension($request->picture->getClientOriginalName());
+                request()->picture->storeAs('public/profile_pictures',$vbl3.".".$vbl4);
+                $var->picture = $vbl3.".".$vbl4;
+            }
+            $var->update();
+
+            $str['status']=true;
+            $str['message']="USER UPDATED";
+            $str['data']=$var;
+            return $str;
+
+        }
+    }
+
+    public function password_update(Request $request)
+    {
+        $validator = Validator::make($request->all(),[
+            'user_id'=> 'required|numeric|exists:users,id',
+            'old_password' => 'required|min:6',
+            'new_password' => 'required|min:6',
+        ],[
+            'user_id.required'=>'Please Enter User Id',
+            'user_id.exists'=>'User Not Found',
+            'old_password.required'=>'Enter Your Old Password',
+            'old_password.min'=>'Password Not Less Than 6 Digits',
+            'new_password.required'=>'Enter Your New Password',
+            'new_password.min'=>'Password Not Less Than 6 Digits',
+            ]);
+        if ($validator->fails())
+        {
+            $str['status']=false;
+            $error=$validator->errors()->toArray();
+            foreach($error as $x_value){
+                $err[]=$x_value[0];
+            }
+             $str['message'] =$err['0'];
+            // $str['data'] = $validator->errors()->toArray();
+            return $str;
+        }
+        else
+        {
+            $var = User::find($request->user_id);
+            if($request->old_password == $var->password)
+            {
+                $var->password = $request->new_password;
+                $var->update();
+
+                $str['status']=true;
+                $str['message']="PASSWORD UPDATED";
+                $str['data']=$var;
+                return $str;
+            }
+            else
+            {
+                $str['status']=false;
+                $str['message']="Old Password Is Incorrect!";
+                return $str;
+            }
         }
     }
 }

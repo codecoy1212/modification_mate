@@ -22,6 +22,9 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::group(['middleware' => 'auth:sanctum'], function(){
     //All secure URL's
     Route::post('mobile/logout',[MobileController::class,'logout']);
+    Route::get('mobile/profile/show',[MobileController::class,'profile']);
+    Route::post('mobile/profile/update',[MobileController::class,'profile_updated']);
+    Route::post('mobile/profile/update/password',[MobileController::class,'password_update']);
 });
 
 Route::get('default',function(){
