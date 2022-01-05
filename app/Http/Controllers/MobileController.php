@@ -69,7 +69,7 @@ class MobileController extends Controller
             }
             else
             {
-            $var->stu_pic = "default-user.jpg";
+            $var->picture = "default-user.jpg";
             $var->save();
             }
 
