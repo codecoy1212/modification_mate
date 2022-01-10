@@ -15,7 +15,7 @@ class CreateNotificationListsTable extends Migration
     {
         Schema::create('notification_lists', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_task_id')->constrained();
+            $table->foreignId('task_id')->constrained();
             $table->foreignId('notification_type_id')->constrained();
             $table->boolean('status');
             $table->timestamps();

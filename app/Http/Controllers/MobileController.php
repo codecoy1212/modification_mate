@@ -2,8 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Feedback;
+use App\Models\SubGoal;
+use App\Models\Task;
 use App\Models\User;
+use App\Models\UserTask;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -275,6 +280,615 @@ class MobileController extends Controller
                 $str['message']="Old Password Is Incorrect!";
                 return $str;
             }
+        }
+    }
+
+    ################################################################################################
+
+    public function add_task(Request $request)
+    {
+        // return $request;
+
+        $validator = Validator::make($request->all(),[
+            'from_user'=> 'required',
+            'to_user'=> 'required',
+            'goal_title'=> 'required|min:5',
+            'goal_description' => 'min:5',
+            'end_date' => 'required|date_format:Y-m-d',
+            'end_time' => 'required|date_format:h:i:s A',
+            'picture' => 'required',
+            'sub_goals' => 'required',
+        ], [
+            'from_user.required' => 'Please enter Logged In User ID.',
+            'to_user.required' => 'Please enter Assigned To User ID.',
+            'goal_title.required' => 'Please enter Goal Title.',
+            'goal_title.min' => 'Goal Title must be at least 5 characters.',
+            'goal_description.min' => 'Goal Description must be at least 5 characters.',
+            'end_date.required' => 'End Date is required.',
+            'end_date.date_format' => 'Date format is Incorrect.',
+            'end_time.required' => 'End Time is required.',
+            'end_time.date_format' => 'Time format is Incorrect.',
+            'picture.required' => 'Task Picture Is Required.',
+            'sub_goals.required' => 'There must be at least one Sub Goal.',
+            ]);
+        if ($validator->fails())
+        {
+            $str['status']=false;
+            $error=$validator->errors()->toArray();
+            foreach($error as $x_value){
+                $err[]=$x_value[0];
+            }
+            $str['message'] =$err['0'];
+            return $str;
+        }
+        else
+        {
+            if($request->sub_goals[0])
+            {
+                // echo"hello";
+                // echo $request->sub_goals[0];
+                foreach ($request->sub_goals as $value) {
+                    // echo "hello";
+                    if($value['title'] == "")
+                    {
+                        $str['status']=false;
+                        $str['message']="There must be at least one Sub Goal.";
+                        return $str;
+                    }
+                }
+
+                // echo "HELLO";
+                $var = new Task;
+                $var->title = $request->goal_title;
+                $var->description = $request->goal_description;
+                $var->end_date = $request->end_date;
+                $var->end_time = $request->end_time;
+                $var->picture = $request->picture;
+                $var->from_user = $request->from_user;
+                $var->to_user = $request->to_user;
+                $var->task_status = "PENDING";
+                $var->save();
+
+                foreach ($request->sub_goals as $value) {
+                    $var3 = new SubGoal;
+                    $var3->task_id = $var->id;
+                    $var3->title = $value['title'];
+                    $var3->description = $value['description'];
+                    $var3->rating = 0;
+                    $var3->save();
+                }
+
+                $str['status']=true;
+                $str['message']="NEW TASK CREATED & SENT (PENDING).";
+                return $str;
+            }
+            else
+            {
+                $str['status']=false;
+                $str['message']="There must be at least one Sub Goal.";
+                return $str;
+            }
+        }
+    }
+
+    public function get_tasks(Request $request)
+    {
+        // return "hello";
+        if($request->assign_type == "from")
+        {
+            $vbl0 = User::where('id',$request->user_id)->first();
+            if(empty($vbl0))
+            {
+                $str['status']=false;
+                $str['message']="User does not Exist.";
+                return $str;
+            }
+            // $vbl2 = UserTask::where('to_user',$request->user_id)->get();
+            $vbl2 = DB::table('tasks')
+            ->where('to_user','=',$request->user_id)
+            ->where('task_status','=',"ON_GOING")
+            ->join('users','users.id','=','tasks.to_user')
+            ->select('tasks.id','tasks.title','tasks.end_date','tasks.end_time','tasks.to_user','tasks.from_user','tasks.task_status')
+            ->get();
+
+            if(count($vbl2) == 0)
+            {
+                $str['status']=false;
+                $str['message']="NO TASKS IN THE LIST";
+                return $str;
+            }
+            else
+            {
+                $str['status']=true;
+                $str['message']="ASSIGNED TO ME TASKS SHOWN";
+                $str['data']= $vbl2;
+                return $str;
+            }
+        }
+        else if($request->assign_type == "to")
+        {
+            $vbl1 = User::where('id',$request->user_id)->first();
+            if(empty($vbl1))
+            {
+                $str['status']=false;
+                $str['message']="User does not Exist.";
+                return $str;
+            }
+            $vbl3 = DB::table('tasks')
+            ->where('from_user','=',$request->user_id)
+            ->where(function($q){
+                $q->where('task_status','=',"ON_GOING")
+                ->orWhere('task_status','=',"R_PENDING")
+                ->orWhere('task_status','=',"PENDING");
+            })
+            ->join('users','users.id','=','tasks.from_user')
+            ->select('tasks.id','tasks.title','tasks.end_date','tasks.end_time','tasks.from_user','tasks.to_user','tasks.task_status')
+            ->get();
+            if(count($vbl3) == 0)
+            {
+                if(count($vbl3) == 0)
+                {
+                    $str['status']=false;
+                    $str['message']="NO TASKS GIVEN YET";
+                    return $str;
+                }
+            }
+            else
+            {
+                $str['status']=true;
+                $str['message']="GIVEN TO OTHERS TASKS SHOWN";
+                $str['data']= $vbl3;
+                return $str;
+            }
+        }
+        else
+        {
+            $str['status']=false;
+            $str['message']="ASSIGN TYPE NOT GIVEN";
+            return $str;
+        }
+    }
+
+    public function get_users()
+    {
+        $vbl = User::all();
+        if(count($vbl) == 0)
+        {
+            $str['status']=false;
+            $str['message']="NO USER ADDED YET.";
+            return $str;
+        }
+        else
+        {
+            $str['status']=true;
+            $str['message']="ALL USERS SHOWN";
+            $str['data']= $vbl;
+            return $str;
+        }
+    }
+
+    public function get_task_detail(Request $request)
+    {
+        if($request->task_status == null)
+        {
+            $str['status']=false;
+            $str['message']="TASK STATUS NULL";
+            return $str;
+        }
+        else if($request->task_status == "ON_GOING" || $request->task_status == "PENDING")
+        {
+            $vbl2 = Task::where('id',$request->task_id)
+            ->where(function($q){
+                $q->where('task_status',"ON_GOING")
+                ->orWhere('task_status',"PENDING");
+            })
+
+            ->first();
+            // return $vbl2;
+
+            if(empty($vbl2))
+            {
+                $str['status']=false;
+                $str['message']="TASK NOT AVAILABLE OR DOES NOT EXIST";
+                return $str;
+            }
+            else
+            {
+                $vbl3 = SubGoal::where('task_id',$vbl2->id)->get();
+                // return $vbl3;
+
+                $str['status']=true;
+                $str['message']="PENDING OR ON GOING TASK DETAIL SHOW";
+                $str['data']['task_details']= $vbl2;
+                $str['data']['task_subgoals_details']= $vbl3;
+                return $str;
+            }
+        }
+        else if($request->task_status == "COMPLETED" || $request->task_status == "R_PENDING")
+        {
+            $vbl2 = Task::where('id',$request->task_id)
+            ->where(function($q){
+                $q->where('task_status',"COMPLETED")
+                ->orWhere('task_status',"R_PENDING");
+            })->first();
+
+            // return $vbl2;
+
+            if(empty($vbl2))
+            {
+                $str['status']=false;
+                $str['message']="TASK HISTORY NOT AVAILABLE OR DOES NOT EXIST";
+                return $str;
+            }
+            else
+            {
+                $vbl3 = SubGoal::where('task_id',$vbl2->id)->get();
+                // return $vbl3;
+
+                $str['status']=true;
+                $str['message']="COMPLETED OR R_PENDING TASK DETAIL SHOW";
+                $str['data']['task_details']= $vbl2;
+                $str['data']['task_subgoals_details']= $vbl3;
+                return $str;
+            }
+        }
+        else if($request->task_status != "COMPLETED"
+        || $request->task_status != "R_PENDING"
+        || $request->task_status != "ON_GOING")
+        {
+            $str['status']=false;
+            $str['message']="TASK STATUS INCORRECT";
+            return $str;
+        }
+    }
+
+    public function give_feedback(Request $request)
+    {
+        // return $request;
+        $validator = Validator::make($request->all(),[
+            'sub_goal_id'=> 'required|exists:sub_goals,id',
+            'feedback'=> 'required|min:5',
+        ], [
+            'sub_goal_id.required' => 'Sub Goal ID is required.',
+            'feedback.required' => 'Feedback is required to be submitted.',
+            'feedback.min' => 'Feedback minimum length in 5 characters.',
+            ]);
+        if ($validator->fails())
+        {
+            $str['status']=false;
+            $error=$validator->errors()->toArray();
+            foreach($error as $x_value){
+                $err[]=$x_value[0];
+            }
+            $str['message'] =$err['0'];
+            return $str;
+        }
+        else
+        {
+            $vbl = new Feedback;
+            $vbl->sub_goal_id = $request->sub_goal_id;
+            $vbl->feedback = $request->feedback;
+            $vbl->save();
+
+            $str['status']=true;
+            $str['message']="FEED BACK ADDED TO THE SUB GOAL";
+            return $str;
+        }
+    }
+
+    public function get_sub_task_and_feedbacks(Request $request)
+    {
+        // return $request;
+        $vbl2 = SubGoal::where('id',$request->sub_goal_id)->first();
+        // return $vbl2;
+
+        if(empty($vbl2))
+        {
+            $str['status']=false;
+            $str['message']="SUB GOAL DOES NOT EXIST";
+            return $str;
+        }
+        else
+        {
+            $vbl3 = Feedback::where('sub_goal_id',$vbl2->id)->get();
+            // return $vbl3;
+
+            if(count($vbl3) == 0)
+            {
+                $str['status']=true;
+                $str['message'] = "SUB GOALS WITH FEEDBACKS SHOWN";
+                $str['data']['sub_goal_details'] = $vbl2;
+                $str['data']['sub_goal_feedbacks_list']['status'] = false;
+                $str['data']['sub_goal_feedbacks_list']['message'] = "NO FEEDBACKS ADDED YET";
+                return $str;
+            }
+
+            $str['status']=true;
+            $str['message']="SUB GOALS WITH FEEDBACKS SHOWN";
+            $str['data']['sub_goal_details']= $vbl2;
+            $str['data']['sub_goal_feedbacks_list']= $vbl3;
+            return $str;
+        }
+    }
+
+    public function update_task(Request $request)
+    {
+        // return $request;
+        $validator = Validator::make($request->all(),[
+            'task_id'=> 'required|exists:tasks,id',
+            'goal_title'=> 'required|min:5',
+            'goal_description' => 'min:5',
+            'end_date' => 'required|date_format:Y-m-d',
+            'end_time' => 'required|date_format:h:i:s A',
+            'picture' => 'required',
+            'sub_goals' => 'required',
+        ], [
+            'task_id.required'=> 'Task ID is required to Modify the Task.',
+            'from_user.required' => 'Please enter Logged In User ID.',
+            'to_user.required' => 'Please enter Assigned To User ID.',
+            'goal_title.required' => 'Please enter Goal Title.',
+            'goal_title.min' => 'Goal Title must be at least 5 characters.',
+            'goal_description.min' => 'Goal Description must be at least 5 characters.',
+            'end_date.required' => 'End Date is required.',
+            'end_date.date_format' => 'Date format is Incorrect.',
+            'end_time.required' => 'End Time is required.',
+            'end_time.date_format' => 'Time format is Incorrect.',
+            'picture.required' => 'Task Picture Is Required.',
+            'sub_goals.required' => 'There must be at least one Sub Goal.',
+            ]);
+        if ($validator->fails())
+        {
+            $str['status']=false;
+            $error=$validator->errors()->toArray();
+            foreach($error as $x_value){
+                $err[]=$x_value[0];
+            }
+            $str['message'] =$err['0'];
+            return $str;
+        }
+        else
+        {
+            if($request->sub_goals[0])
+            {
+                // echo"hello";
+                // echo $request->sub_goals[0];
+                foreach ($request->sub_goals as $value) {
+                    // echo "hello";
+                    if($value['title'] == "")
+                    {
+                        $str['status']=false;
+                        $str['message']="There must be at least one Sub Goal.";
+                        return $str;
+                    }
+                }
+
+                // echo "HELLO";
+                $var = Task::find($request->task_id);
+                $var->title = $request->goal_title;
+                $var->description = $request->goal_description;
+                $var->end_date = $request->end_date;
+                $var->end_time = $request->end_time;
+                $var->picture = $request->picture;
+                $var->task_status = "REQ_MODIFY";
+                $var->update();
+
+
+                $vbl6 = SubGoal::where('task_id',$request->task_id)->get();
+                foreach ($vbl6 as $value) {
+                    Feedback::where('sub_goal_id',$value->id)->delete();
+                }
+                $vbl6 = SubGoal::where('task_id',$request->task_id)->delete();
+
+                foreach ($request->sub_goals as $value) {
+                    $var3 = new SubGoal;
+                    $var3->task_id = $var->id;
+                    $var3->title = $value['title'];
+                    $var3->description = $value['description'];
+                    $var3->rating = 0;
+                    $var3->save();
+                }
+
+                $str['status']=true;
+                $str['message']="TASK UPDATED & SENT AGAIN (REQ_MODIFY).";
+                return $str;
+            }
+            else
+            {
+                $str['status']=false;
+                $str['message']="There must be at least one Sub Goal.";
+                return $str;
+            }
+        }
+    }
+
+    public function give_rating(Request $request)
+    {
+        // return "hello 2";
+        $validator = Validator::make($request->all(),[
+            'sub_goal_id'=> 'required|exists:sub_goals,id',
+            'rating'=> 'required|digits:1',
+        ], [
+            'sub_goal_id.required' => 'Sub Goal ID is required.',
+            'rating.required' => 'Rating is required to be submitted.',
+            'rating.digits' => 'ONLY 1 TO 5 DIGIT ALLOWED',
+            ]);
+        if ($validator->fails())
+        {
+            $str['status']=false;
+            $error=$validator->errors()->toArray();
+            foreach($error as $x_value){
+                $err[]=$x_value[0];
+            }
+            $str['message'] =$err['0'];
+            return $str;
+        }
+        else
+        {
+            if($request->rating == 1 || $request->rating == 2 || $request->rating == 3 || $request->rating == 4 ||
+            $request->rating == 5)
+            {
+                $vbl = SubGoal::find($request->sub_goal_id);
+                $vbl->rating = $request->rating;
+                $vbl->update();
+
+                $str['status']=true;
+                $str['message']="RATING GIVEN TO THE SUB GOAL";
+                return $str;
+            }
+            else
+            {
+                $str['status']=false;
+                $str['message']="ONLY 1 TO 5 DIGIT ALLOWED";
+                return $str;
+            }
+        }
+    }
+
+    public function get_history(Request $request)
+    {
+        // return $request;
+        $vbl0 = User::where('id',$request->user_id)->first();
+        if(empty($vbl0))
+        {
+            $str['status']=false;
+            $str['message']="User does not Exist.";
+            return $str;
+        }
+        // $vbl2 = UserTask::where('to_user',$request->user_id)->get();
+        $vbl2 = DB::table('tasks')
+        ->where('to_user','=',$request->user_id)
+        ->where(function($q){
+            $q->where('task_status','=',"COMPLETED")
+            ->orWhere('task_status','=',"R_PENDING");
+        })
+        ->select('tasks.*')
+        ->get();
+
+        $arr = array();
+
+        $i = 0;
+        $sum = 0;
+        foreach ($vbl2 as $value) {
+            $vbl3 = SubGoal::where('task_id',$value->id)->get();
+            foreach ($vbl3 as $value2) {
+                $i++;
+                $sum = $value2->rating + $sum;
+                // echo $sum."\n";
+                if($i == count($vbl3))
+                {
+                    // echo $sum."\n";
+                    $sum = $sum/count($vbl3);
+                    $value->given_rating = $sum;
+                    array_push($arr,$value);
+
+                    $i = 0;
+                    $sum = 0;
+                }
+            }
+
+        }
+        // return $arr;
+        if(count($vbl2) == 0)
+        {
+            $str['status']=false;
+            $str['message']="NO TASKS IN THE HISTORY";
+            return $str;
+        }
+        else
+        {
+            $str['status']=true;
+            $str['message']="ALL HISTORY SHOWN";
+            $str['data']= $arr;
+            return $str;
+        }
+    }
+
+    public function upload_file(Request $request)
+    {
+        // return $request;
+        $validator = Validator::make($request->all(),[
+            'picture' => 'required|mimes:jpeg,bmp,png,jpg|max:5120',
+        ], [
+            'picture.mimes' => 'Picture Is Not Valid.',
+            'picture.required' => 'Picture Is required to be Uploaded.',
+            ]);
+        if ($validator->fails())
+        {
+            $str['status']=false;
+            $error=$validator->errors()->toArray();
+            foreach($error as $x_value){
+                $err[]=$x_value[0];
+            }
+            $str['message'] =$err['0'];
+            return $str;
+        }
+        else
+        {
+            $vbl3 = rand(100000000000000,999999999999999);
+            $vbl4 = File::extension($request->picture->getClientOriginalName());
+            request()->picture->storeAs('public/profile_pictures',$vbl3.".".$vbl4);
+            $vbl5 = $vbl3.".".$vbl4;
+
+            $str['status']=true;
+            $str['message']="PICTURE SAVED";
+            $str['data']= $vbl5;
+            return $str;
+        }
+    }
+
+    public function delete_task(Request $request)
+    {
+        // return $request;
+
+        $vbl = Task::find($request->task_id);
+
+
+        if(empty($vbl))
+        {
+            $str['status']=false;
+            $str['message']="TASK DOES NOT EXIST";
+            return $str;
+        }
+        else if($vbl->task_status == "REQ_MODIFY" || $vbl->task_status == "PENDING")
+        {
+            $vbl2 = SubGoal::where('task_id',$vbl->id)->delete();
+            $vbl->delete();
+            $str['status']=true;
+            $str['message']="TASK DELETED";
+            return $str;
+        }
+        else
+        {
+            $str['status']=false;
+            $str['message']="NOT PENDING OR MODIFICATION REQUEST";
+            return $str;
+        }
+    }
+
+    public function accept_task(Request $request)
+    {
+        $vbl = Task::find($request->task_id);
+
+        if(empty($vbl))
+        {
+            $str['status']=false;
+            $str['message']="TASK DOES NOT EXIST";
+            return $str;
+        }
+        else if($vbl->task_status == "REQ_MODIFY" || $vbl->task_status == "PENDING")
+        {
+            $vbl->task_status = "ON_GOING";
+            $vbl->save();
+
+            $str['status']=true;
+            $str['message']="TASK ACCEPTED";
+            return $str;
+        }
+        else
+        {
+            $str['status']=false;
+            $str['message']="NOT PENDING OR MODIFICATION REQUEST";
+            return $str;
         }
     }
 }

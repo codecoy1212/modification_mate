@@ -20,6 +20,11 @@ class CreateTasksTable extends Migration
             $table->string('end_date');
             $table->string('end_time');
             $table->string('picture');
+            $table->unsignedBigInteger('from_user');
+            $table->foreign('from_user')->references('id')->on('users');
+            $table->unsignedBigInteger('to_user');
+            $table->foreign('to_user')->references('id')->on('users');
+            $table->string('task_status');
             $table->timestamps();
         });
     }
