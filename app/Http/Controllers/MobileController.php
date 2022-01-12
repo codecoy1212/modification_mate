@@ -25,7 +25,7 @@ class MobileController extends Controller
             'email' => 'required|email:rfc,dns|unique:users,email',
             'username' => 'required|min:3|unique:users,username',
             'password' => 'required|min:6',
-            'c_password' => 'required|same:password',
+            // 'c_password' => 'required|same:password',
             'picture' => 'mimes:jpeg,bmp,png,jpg|max:5120',
         ], [
             'name.required' => 'Please enter your Name.',
@@ -38,8 +38,8 @@ class MobileController extends Controller
             'username.unique' => 'Username must be unique',
             'pasword.required' => 'Please enter your password.',
             'pasword.min' => 'Password Not Less Than 6 digits.',
-            'c_pasword.required' => 'Please confirm your password.',
-            'c_pasword.min' => 'Password Not Less Than 6 digits.',
+            // 'c_pasword.required' => 'Please confirm your password.',
+            // 'c_pasword.min' => 'Password Not Less Than 6 digits.',
             'picture.mimes' => 'Picture Is Not Valid.',
             ]);
         if ($validator->fails())
