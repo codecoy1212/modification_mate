@@ -64,7 +64,7 @@ class MobileController extends Controller
             {
                 $vbl3 = rand(100000000000000,999999999999999);
                 $vbl4 = File::extension($request->picture->getClientOriginalName());
-                request()->picture->storeAs('public/profile_pictures',$vbl3.".".$vbl4);
+                request()->picture->storeAs('public/pictures',$vbl3.".".$vbl4);
                 $var->picture = $vbl3.".".$vbl4;
                 $var->save();
             }
@@ -223,7 +223,7 @@ class MobileController extends Controller
             {
                 $vbl3 = rand(100000000000000,999999999999999);
                 $vbl4 = File::extension($request->picture->getClientOriginalName());
-                request()->picture->storeAs('public/profile_pictures',$vbl3.".".$vbl4);
+                request()->picture->storeAs('public/pictures',$vbl3.".".$vbl4);
                 $var->picture = $vbl3.".".$vbl4;
             }
             $var->update();
@@ -826,7 +826,7 @@ class MobileController extends Controller
         {
             $vbl3 = rand(100000000000000,999999999999999);
             $vbl4 = File::extension($request->picture->getClientOriginalName());
-            request()->picture->storeAs('public/profile_pictures',$vbl3.".".$vbl4);
+            request()->picture->storeAs('public/pictures',$vbl3.".".$vbl4);
             $vbl5 = $vbl3.".".$vbl4;
 
             $str['status']=true;
