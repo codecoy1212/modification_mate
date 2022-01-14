@@ -40,7 +40,7 @@ class MobileController extends Controller
             'pasword.min' => 'Password Not Less Than 6 digits.',
             // 'c_pasword.required' => 'Please confirm your password.',
             // 'c_pasword.min' => 'Password Not Less Than 6 digits.',
-            'picture.mimes' => 'Picture Is Not Valid.',
+            'picture.mimes' => 'Picture Is Not Valid or Larger than 5 MB.',
             ]);
         if ($validator->fails())
         {
@@ -201,7 +201,7 @@ class MobileController extends Controller
         ], [
             'name.required' => 'Please enter your Name.',
             'name.min' => 'Name must be at least 3 characters.',
-            'picture.mimes' => 'Picture Is Not Valid.',
+            'picture.mimes' => 'Picture Is Not Valid or Larger than 5 MB.',
             ]);
         if ($validator->fails())
         {
@@ -292,8 +292,8 @@ class MobileController extends Controller
         $validator = Validator::make($request->all(),[
             'from_user'=> 'required',
             'to_user'=> 'required',
-            'goal_title'=> 'required|min:5',
-            'goal_description' => 'min:5',
+            'goal_title'=> 'required|min:2',
+            'goal_description' => 'min:2',
             'end_date' => 'required|date_format:Y-m-d',
             'end_time' => 'required|date_format:h:i:s A',
             'picture' => 'required',
@@ -302,8 +302,8 @@ class MobileController extends Controller
             'from_user.required' => 'Please enter Logged In User ID.',
             'to_user.required' => 'Please enter Assigned To User ID.',
             'goal_title.required' => 'Please enter Goal Title.',
-            'goal_title.min' => 'Goal Title must be at least 5 characters.',
-            'goal_description.min' => 'Goal Description must be at least 5 characters.',
+            'goal_title.min' => 'Goal Title must be at least 2 characters.',
+            'goal_description.min' => 'Goal Description must be at least 2 characters.',
             'end_date.required' => 'End Date is required.',
             'end_date.date_format' => 'Date format is Incorrect.',
             'end_time.required' => 'End Time is required.',
@@ -449,9 +449,11 @@ class MobileController extends Controller
         }
     }
 
-    public function get_users()
+    public function get_users(Request $request)
     {
-        $vbl = User::all();
+        $curr_user = $request->user();
+        // return $curr_user;
+        $vbl = User::where('id','!=',$curr_user->id)->get();
         if(count($vbl) == 0)
         {
             $str['status']=false;
@@ -616,8 +618,8 @@ class MobileController extends Controller
         // return $request;
         $validator = Validator::make($request->all(),[
             'task_id'=> 'required|exists:tasks,id',
-            'goal_title'=> 'required|min:5',
-            'goal_description' => 'min:5',
+            'goal_title'=> 'required|min:2',
+            'goal_description' => 'min:2',
             'end_date' => 'required|date_format:Y-m-d',
             'end_time' => 'required|date_format:h:i:s A',
             'picture' => 'required',
@@ -627,8 +629,8 @@ class MobileController extends Controller
             'from_user.required' => 'Please enter Logged In User ID.',
             'to_user.required' => 'Please enter Assigned To User ID.',
             'goal_title.required' => 'Please enter Goal Title.',
-            'goal_title.min' => 'Goal Title must be at least 5 characters.',
-            'goal_description.min' => 'Goal Description must be at least 5 characters.',
+            'goal_title.min' => 'Goal Title must be at least 2 characters.',
+            'goal_description.min' => 'Goal Description must be at least 2 characters.',
             'end_date.required' => 'End Date is required.',
             'end_date.date_format' => 'Date format is Incorrect.',
             'end_time.required' => 'End Time is required.',
@@ -809,7 +811,7 @@ class MobileController extends Controller
         $validator = Validator::make($request->all(),[
             'picture' => 'required|mimes:jpeg,bmp,png,jpg|max:5120',
         ], [
-            'picture.mimes' => 'Picture Is Not Valid.',
+            'picture.mimes' => 'Picture Is Not Valid or Larger than 5 MB.',
             'picture.required' => 'Picture Is required to be Uploaded.',
             ]);
         if ($validator->fails())
