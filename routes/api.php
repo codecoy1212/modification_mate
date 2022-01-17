@@ -40,6 +40,7 @@ Route::group(['middleware' => 'auth:sanctum'], function(){
     Route::post('mobile/image/upload',[MobileController::class,'upload_file']);
     Route::post('mobile/tasks/delete_request',[MobileController::class,'delete_task']);
     Route::post('mobile/tasks/accept_request',[MobileController::class,'accept_task']);
+    Route::get('mobile/tasks/get_notifications',[MobileController::class,'get_notification']);
 });
 
 #default

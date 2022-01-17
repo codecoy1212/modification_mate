@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Feedback;
+use App\Models\Notification;
 use App\Models\SubGoal;
 use App\Models\Task;
 use App\Models\User;
@@ -166,7 +167,7 @@ class MobileController extends Controller
         }
         else
         {
-            $vbl->tokens()->delete();
+            $request->user()->currentAccessToken()->delete();
             $str['status']=true;
             $str['message']="USER LOG OUT SUCCESSFULL";
             return $str;
@@ -358,6 +359,17 @@ class MobileController extends Controller
                     $var3->save();
                 }
 
+
+                $var4 = new Notification;
+                $var4->task_id = $var->id;
+                $var4->notification_type = "ADDED";
+                $var4->notification_msg = "New Behaviour Request.";
+                $var4->from_user = $request->from_user;
+                $var4->to_user = $request->to_user;
+                $var4->status = 0;
+                $var4->save();
+
+
                 $str['status']=true;
                 $str['message']="NEW TASK CREATED & SENT (PENDING).";
                 return $str;
@@ -418,7 +430,7 @@ class MobileController extends Controller
             ->where('from_user','=',$request->user_id)
             ->where(function($q){
                 $q->where('task_status','=',"ON_GOING")
-                ->orWhere('task_status','=',"R_PENDING")
+                // ->orWhere('task_status','=',"R_PENDING")
                 ->orWhere('task_status','=',"PENDING");
             })
             ->join('users','users.id','=','tasks.from_user')
@@ -506,13 +518,37 @@ class MobileController extends Controller
                 return $str;
             }
         }
-        else if($request->task_status == "COMPLETED" || $request->task_status == "R_PENDING")
+        else if($request->task_status == "COMPLETED")
+        // || $request->task_status == "R_PENDING"
         {
             $vbl2 = Task::where('id',$request->task_id)
             ->where(function($q){
-                $q->where('task_status',"COMPLETED")
-                ->orWhere('task_status',"R_PENDING");
+                $q->where('task_status',"COMPLETED");
+                // ->orWhere('task_status',"R_PENDING");
             })->first();
+
+            // return $vbl2;
+
+            if(empty($vbl2))
+            {
+                $str['status']=false;
+                $str['message']="TASK HISTORY NOT AVAILABLE OR DOES NOT EXIST";
+                return $str;
+            }
+            else
+            {
+                $vbl3 = SubGoal::where('task_id',$vbl2->id)->get();
+                // return $vbl3;
+
+                $str['status']=true;
+                $str['message']="COMPLETED OR R_PENDING TASK DETAIL SHOW";
+                $str['data']['task_details']= $vbl2;
+                $str['data']['task_subgoals_details']= $vbl3;
+                return $str;
+            }
+        }else if ($request->task_status == "REQ_MODIFY" ) {
+            $vbl2 = Task::where('id',$request->task_id)
+            ->where('task_status',"REQ_MODIFY")->first();
 
             // return $vbl2;
 
@@ -535,8 +571,9 @@ class MobileController extends Controller
             }
         }
         else if($request->task_status != "COMPLETED"
-        || $request->task_status != "R_PENDING"
-        || $request->task_status != "ON_GOING")
+        // || $request->task_status != "R_PENDING"
+        || $request->task_status != "ON_GOING"
+        || $request->task_status != "REQ_MODIFY")
         {
             $str['status']=false;
             $str['message']="TASK STATUS INCORRECT";
@@ -547,6 +584,8 @@ class MobileController extends Controller
     public function give_feedback(Request $request)
     {
         // return $request;
+        // return $vbl4;
+
         $validator = Validator::make($request->all(),[
             'sub_goal_id'=> 'required|exists:sub_goals,id',
             'feedback'=> 'required|min:5',
@@ -571,6 +610,18 @@ class MobileController extends Controller
             $vbl->sub_goal_id = $request->sub_goal_id;
             $vbl->feedback = $request->feedback;
             $vbl->save();
+
+            $vbl4 = SubGoal::find($request->sub_goal_id);
+            $vbl5 = Task::find($vbl4->task_id);
+
+            $var4 = new Notification;
+            $var4->task_id = $vbl5->id;
+            $var4->notification_type = "FEEDBACK";
+            $var4->notification_msg = "New Feedback added for the following task.";
+            $var4->from_user = $vbl5->to_user;
+            $var4->to_user = $vbl5->from_user;
+            $var4->status = 0;
+            $var4->save();
 
             $str['status']=true;
             $str['message']="FEED BACK ADDED TO THE SUB GOAL";
@@ -690,6 +741,16 @@ class MobileController extends Controller
                     $var3->save();
                 }
 
+                $var4 = new Notification;
+                $var4->task_id = $var->id;
+                $var4->notification_type = "MODIFY";
+                $var4->notification_msg = "Request for change in Behaviour.";
+                $var4->from_user = $var->to_user;
+                $var4->to_user = $var->from_user;
+                $var4->status = 0;
+                $var4->save();
+
+
                 $str['status']=true;
                 $str['message']="TASK UPDATED & SENT AGAIN (REQ_MODIFY).";
                 return $str;
@@ -730,8 +791,63 @@ class MobileController extends Controller
             $request->rating == 5)
             {
                 $vbl = SubGoal::find($request->sub_goal_id);
+                $vbl4 = SubGoal::where('task_id',$vbl->task_id)->get();
+
+                $j=0;
+                foreach ($vbl4 as $value2) {
+                    // echo $value2->rating;
+                    if($value2->rating != 0)
+                    {
+                        $j++;
+                    }
+                }
+                // echo $j;
+                if($j == count($vbl4))
+                {
+                    $str['status']=true;
+                    $str['message']="RATING ALREADY SUBMITTED";
+                    return $str;
+                }
+
+
+
                 $vbl->rating = $request->rating;
                 $vbl->update();
+
+
+                $vbl2 = SubGoal::where('task_id',$vbl->task_id)->get();
+                $vbl3 = Task::find($vbl->task_id);
+
+                $i = 0;
+                foreach ($vbl2 as $value) {
+                    // echo $i."\n";
+                    // echo $value->rating."\n";
+                    if($value->rating == 0)
+                    {
+                        break;
+                    }
+                    $i++;
+
+                }
+
+                // return array($i,count($vbl2));
+
+                if(count($vbl2) == $i )
+                {
+                    $var4 = new Notification;
+                    $var4->task_id = $vbl3->id;
+                    $var4->notification_type = "RATING";
+                    $var4->notification_msg = "Your Rating is given by the User.";
+                    $var4->from_user = $vbl3->from_user;
+                    $var4->to_user = $vbl3->to_user;
+                    $var4->status = 0;
+                    $var4->save();
+
+                    $vbl5 = Task::find($vbl3->id);
+                    $vbl5->task_status = "COMPLETED";
+                    $vbl5->save();
+                }
+
 
                 $str['status']=true;
                 $str['message']="RATING GIVEN TO THE SUB GOAL";
@@ -760,8 +876,8 @@ class MobileController extends Controller
         $vbl2 = DB::table('tasks')
         ->where('to_user','=',$request->user_id)
         ->where(function($q){
-            $q->where('task_status','=',"COMPLETED")
-            ->orWhere('task_status','=',"R_PENDING");
+            $q->where('task_status','=',"COMPLETED");
+            // ->orWhere('task_status','=',"R_PENDING");
         })
         ->select('tasks.*')
         ->get();
@@ -773,6 +889,12 @@ class MobileController extends Controller
         foreach ($vbl2 as $value) {
             $vbl3 = SubGoal::where('task_id',$value->id)->get();
             foreach ($vbl3 as $value2) {
+                if($value2->rating == 0)
+                {
+                    $value->given_rating = 0;
+                    array_push($arr,$value);
+                    break;
+                }
                 $i++;
                 $sum = $value2->rating + $sum;
                 // echo $sum."\n";
@@ -853,7 +975,7 @@ class MobileController extends Controller
         }
         else if($vbl->task_status == "REQ_MODIFY" || $vbl->task_status == "PENDING")
         {
-            $vbl2 = SubGoal::where('task_id',$vbl->id)->delete();
+            SubGoal::where('task_id',$vbl->id)->delete();
             $vbl->delete();
             $str['status']=true;
             $str['message']="TASK DELETED";
@@ -877,19 +999,67 @@ class MobileController extends Controller
             $str['message']="TASK DOES NOT EXIST";
             return $str;
         }
-        else if($vbl->task_status == "REQ_MODIFY" || $vbl->task_status == "PENDING")
+        else if($vbl->task_status == "REQ_MODIFY")
         {
+            $var4 = new Notification;
+            $var4->task_id = $vbl->id;
+            $var4->notification_type = "MODIFY_ACCEPT";
+            $var4->notification_msg = "Modify Request Accepted By User.";
+            $var4->from_user = $vbl->from_user;
+            $var4->to_user = $vbl->to_user;
+            $var4->status = 0;
+            $var4->save();
+
             $vbl->task_status = "ON_GOING";
             $vbl->save();
 
             $str['status']=true;
-            $str['message']="TASK ACCEPTED";
+            $str['message']="TASK MODIFY REQUEST ACCEPT ACCEPTED ";
+            return $str;
+        }
+        else if( $vbl->task_status == "PENDING")
+        {
+            $var4 = new Notification;
+            $var4->task_id = $vbl->id;
+            $var4->notification_type = "ACCEPT";
+            $var4->notification_msg = "Request Accepted By User.";
+            $var4->from_user = $vbl->to_user;
+            $var4->to_user = $vbl->from_user;
+            $var4->status = 0;
+            $var4->save();
+
+            $vbl->task_status = "ON_GOING";
+            $vbl->save();
+
+            $str['status']=true;
+            $str['message']="NEW TASK REQUEST ACCEPTED";
             return $str;
         }
         else
         {
             $str['status']=false;
             $str['message']="NOT PENDING OR MODIFICATION REQUEST";
+            return $str;
+        }
+    }
+
+    public function get_notification(Request $request)
+    {
+        // return $request;
+
+        $vbl = Notification::where('to_user',$request->user_id)->orderBy('id','desc')->get();
+
+        if(count($vbl) == 0)
+        {
+            $str['status']=false;
+            $str['message']="NO NOTIFICATIONS YET";
+            return $str;
+        }
+        else
+        {
+            $str['status']=true;
+            $str['message']="ALL NOTIFICATIONS SHOWN";
+            $str['data']=$vbl;
             return $str;
         }
     }

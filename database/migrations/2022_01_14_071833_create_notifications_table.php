@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateNotificationListsTable extends Migration
+class CreateNotificationsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,10 +13,15 @@ class CreateNotificationListsTable extends Migration
      */
     public function up()
     {
-        Schema::create('notification_lists', function (Blueprint $table) {
+        Schema::create('notifications', function (Blueprint $table) {
             $table->id();
             $table->foreignId('task_id')->constrained();
-            $table->foreignId('notification_type_id')->constrained();
+            $table->string('notification_type');
+            $table->string('notification_msg');
+            $table->unsignedBigInteger('from_user');
+            $table->foreign('from_user')->references('id')->on('users');
+            $table->unsignedBigInteger('to_user');
+            $table->foreign('to_user')->references('id')->on('users');
             $table->boolean('status');
             $table->timestamps();
         });
@@ -29,6 +34,6 @@ class CreateNotificationListsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('notification_lists');
+        Schema::dropIfExists('notifications');
     }
 }
