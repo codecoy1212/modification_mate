@@ -1047,7 +1047,13 @@ class MobileController extends Controller
     {
         // return $request;
 
-        $vbl = Notification::where('to_user',$request->user_id)->orderBy('id','desc')->get();
+        // $vbl = Notification::where('to_user',$request->user_id)->orderBy('id','desc')->get();
+
+        $vbl = DB::table('notifications')
+        ->where('to_user','=',$request->user_id)
+        ->join('users','users.id','=','notifications.to_user')
+        ->select('notifications.*','users.name','users.picture')
+        ->get();
 
         if(count($vbl) == 0)
         {
