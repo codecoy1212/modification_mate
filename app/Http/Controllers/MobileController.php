@@ -975,6 +975,7 @@ class MobileController extends Controller
         }
         else if($vbl->task_status == "REQ_MODIFY" || $vbl->task_status == "PENDING")
         {
+            Notification::where('task_id',$vbl->id)->delete();
             SubGoal::where('task_id',$vbl->id)->delete();
             $vbl->delete();
             $str['status']=true;
@@ -1050,6 +1051,7 @@ class MobileController extends Controller
         // $vbl = Notification::where('to_user',$request->user_id)->orderBy('id','desc')->get();
 
         $vbl = DB::table('notifications')
+        ->orderBy('id','desc')
         ->where('to_user','=',$request->user_id)
         ->join('users','users.id','=','notifications.to_user')
         ->select('notifications.*','users.name','users.picture')
