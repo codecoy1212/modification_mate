@@ -514,7 +514,7 @@ class MobileController extends Controller
                 $str['status']=true;
                 $str['message']="PENDING OR ON GOING TASK DETAIL SHOW";
                 $str['data']['task_details']= $vbl2;
-                $str['data']['task_subgoals_details']= $vbl3;
+                $str['data']['sub_goals']= $vbl3;
                 return $str;
             }
         }
