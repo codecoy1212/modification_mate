@@ -752,6 +752,9 @@ class MobileController extends Controller
                 $var4->status = 0;
                 $var4->save();
 
+                $vbl7 = Notification::where('task_id',$var->id)->where('notification_type',"ADDED")->first();
+                $vbl7->notification_type = "ADDED_PENDING";
+                $vbl7->update();
 
                 $str['status']=true;
                 $str['message']="TASK UPDATED & SENT AGAIN (REQ_MODIFY).";
@@ -1016,6 +1019,9 @@ class MobileController extends Controller
             $vbl->task_status = "ON_GOING";
             $vbl->save();
 
+            Notification::where('task_id',$vbl->id)->where('notification_type',"ADDED_PENDING")->delete();
+            Notification::where('task_id',$vbl->id)->where('notification_type',"MODIFY")->delete();
+
             $str['status']=true;
             $str['message']="TASK MODIFY REQUEST ACCEPT ACCEPTED ";
             return $str;
@@ -1033,6 +1039,9 @@ class MobileController extends Controller
 
             $vbl->task_status = "ON_GOING";
             $vbl->save();
+
+            // return "hello";
+            Notification::where('task_id',$vbl->id)->where('notification_type',"ADDED")->delete();
 
             $str['status']=true;
             $str['message']="NEW TASK REQUEST ACCEPTED";
