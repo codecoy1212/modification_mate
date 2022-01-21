@@ -400,7 +400,8 @@ class MobileController extends Controller
             ->where('to_user','=',$request->user_id)
             ->where('task_status','=',"ON_GOING")
             ->join('users','users.id','=','tasks.to_user')
-            ->select('tasks.id','tasks.title','tasks.end_date','tasks.end_time','tasks.to_user','tasks.from_user','tasks.task_status')
+            ->join('users as users2','users2.id','=','tasks.from_user')
+            ->select('users.name as to_user_name','users2.name as from_user_name','tasks.id','tasks.title','tasks.end_date','tasks.end_time','tasks.to_user','tasks.from_user','tasks.task_status')
             ->get();
 
             if(count($vbl2) == 0)
@@ -434,7 +435,8 @@ class MobileController extends Controller
                 ->orWhere('task_status','=',"PENDING");
             })
             ->join('users','users.id','=','tasks.from_user')
-            ->select('tasks.id','tasks.title','tasks.end_date','tasks.end_time','tasks.from_user','tasks.to_user','tasks.task_status')
+            ->join('users as users2','users2.id','=','tasks.to_user')
+            ->select('users.name as from_user_name','users2.name as to_user_name','tasks.id','tasks.title','tasks.end_date','tasks.end_time','tasks.from_user','tasks.to_user','tasks.task_status')
             ->get();
             if(count($vbl3) == 0)
             {
