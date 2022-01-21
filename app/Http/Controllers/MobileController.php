@@ -1052,9 +1052,10 @@ class MobileController extends Controller
 
         $vbl = DB::table('notifications')
         ->orderBy('id','desc')
-        ->where('to_user','=',$request->user_id)
+        ->where('notifications.to_user','=',$request->user_id)
         ->join('users','users.id','=','notifications.to_user')
-        ->select('notifications.*','users.name','users.picture')
+        ->join('tasks','tasks.id','=','notifications.task_id')
+        ->select('tasks.task_status','notifications.*','users.name','users.picture')
         ->get();
 
         if(count($vbl) == 0)
