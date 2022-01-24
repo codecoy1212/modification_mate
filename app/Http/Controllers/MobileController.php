@@ -545,7 +545,7 @@ class MobileController extends Controller
                 $str['status']=true;
                 $str['message']="COMPLETED OR R_PENDING TASK DETAIL SHOW";
                 $str['data']['task_details']= $vbl2;
-                $str['data']['task_subgoals_details']= $vbl3;
+                $str['data']['sub_goals']= $vbl3;
                 return $str;
             }
         }else if ($request->task_status == "REQ_MODIFY" ) {
@@ -568,7 +568,7 @@ class MobileController extends Controller
                 $str['status']=true;
                 $str['message']="COMPLETED OR R_PENDING TASK DETAIL SHOW";
                 $str['data']['task_details']= $vbl2;
-                $str['data']['task_subgoals_details']= $vbl3;
+                $str['data']['sub_goals']= $vbl3;
                 return $str;
             }
         }
