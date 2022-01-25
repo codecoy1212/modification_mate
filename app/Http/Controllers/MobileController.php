@@ -515,6 +515,21 @@ class MobileController extends Controller
 
                 $str['status']=true;
                 $str['message']="PENDING OR ON GOING TASK DETAIL SHOW";
+
+                if($vbl2->task_status == "PENDING")
+                {
+                    $vbl8 = Notification::where('task_id',$vbl2->id)->where('notification_type',"ADDED")->first();
+                    // return $vbl8;
+                    $vbl2->notification_type = $vbl8->notification_type;
+                }
+
+                if($vbl2->task_status == "ON_GOING")
+                {
+                    $vbl8 = Notification::where('task_id',$vbl2->id)->where('notification_type',"ACCEPT")->first();
+                    // return $vbl8;
+                    $vbl2->notification_type = $vbl8->notification_type;
+                }
+
                 $str['data']['task_details']= $vbl2;
                 $str['data']['sub_goals']= $vbl3;
                 return $str;
@@ -544,9 +559,18 @@ class MobileController extends Controller
 
                 $str['status']=true;
                 $str['message']="COMPLETED OR R_PENDING TASK DETAIL SHOW";
+
+                if($vbl2->task_status == "COMPLETED")
+                {
+                    $vbl8 = Notification::where('task_id',$vbl2->id)->where('notification_type',"RATING")->first();
+                    // return $vbl8;
+                    $vbl2->notification_type = $vbl8->notification_type;
+                }
+
                 $str['data']['task_details']= $vbl2;
                 $str['data']['sub_goals']= $vbl3;
                 return $str;
+
             }
         }else if ($request->task_status == "REQ_MODIFY" ) {
             $vbl2 = Task::where('id',$request->task_id)
@@ -567,6 +591,14 @@ class MobileController extends Controller
 
                 $str['status']=true;
                 $str['message']="COMPLETED OR R_PENDING TASK DETAIL SHOW";
+
+                if($vbl2->task_status == "REQ_MODIFY")
+                {
+                    $vbl8 = Notification::where('task_id',$vbl2->id)->where('notification_type',"MODIFY")->first();
+                    // return $vbl8;
+                    $vbl2->notification_type = $vbl8->notification_type;
+                }
+
                 $str['data']['task_details']= $vbl2;
                 $str['data']['sub_goals']= $vbl3;
                 return $str;
@@ -1009,7 +1041,8 @@ class MobileController extends Controller
         {
             $var4 = new Notification;
             $var4->task_id = $vbl->id;
-            $var4->notification_type = "MODIFY_ACCEPT";
+            // $var4->notification_type = "MODIFY_ACCEPT";
+            $var4->notification_type = "ACCEPT";
             $var4->notification_msg = "Modify Request Accepted By User.";
             $var4->from_user = $vbl->from_user;
             $var4->to_user = $vbl->to_user;
