@@ -18,7 +18,7 @@ class CreateSubGoalsTable extends Migration
             $table->foreignId('task_id')->constrained();
             $table->string('title');
             $table->string('description');
-            $table->unsignedBigInteger('rating');
+            $table->float('rating');
             $table->timestamps();
         });
     }

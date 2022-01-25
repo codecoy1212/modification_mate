@@ -806,11 +806,11 @@ class MobileController extends Controller
         // return "hello 2";
         $validator = Validator::make($request->all(),[
             'sub_goal_id'=> 'required|exists:sub_goals,id',
-            'rating'=> 'required|digits:1',
+            'rating'=> 'required',
         ], [
             'sub_goal_id.required' => 'Sub Goal ID is required.',
             'rating.required' => 'Rating is required to be submitted.',
-            'rating.digits' => 'ONLY 1 TO 5 DIGIT ALLOWED',
+            // 'rating.digits' => 'ONLY 1 TO 5 DIGIT ALLOWED',
             ]);
         if ($validator->fails())
         {
@@ -916,7 +916,6 @@ class MobileController extends Controller
         ->get();
 
         $arr = array();
-
         $i = 0;
         $sum = 0;
         foreach ($vbl2 as $value) {
@@ -942,7 +941,6 @@ class MobileController extends Controller
                     $sum = 0;
                 }
             }
-
         }
         // return $arr;
         if(count($vbl2) == 0)
