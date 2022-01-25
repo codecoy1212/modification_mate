@@ -824,9 +824,9 @@ class MobileController extends Controller
         }
         else
         {
-            if($request->rating == 1 || $request->rating == 2 || $request->rating == 3 || $request->rating == 4 ||
-            $request->rating == 5)
-            {
+            // if($request->rating == 1 || $request->rating == 2 || $request->rating == 3 || $request->rating == 4 ||
+            // $request->rating == 5)
+            // {
                 $vbl = SubGoal::find($request->sub_goal_id);
                 $vbl4 = SubGoal::where('task_id',$vbl->task_id)->get();
 
@@ -846,11 +846,8 @@ class MobileController extends Controller
                     return $str;
                 }
 
-
-
                 $vbl->rating = $request->rating;
                 $vbl->update();
-
 
                 $vbl2 = SubGoal::where('task_id',$vbl->task_id)->get();
                 $vbl3 = Task::find($vbl->task_id);
@@ -885,17 +882,16 @@ class MobileController extends Controller
                     $vbl5->save();
                 }
 
-
                 $str['status']=true;
                 $str['message']="RATING GIVEN TO THE SUB GOAL";
                 return $str;
-            }
-            else
-            {
-                $str['status']=false;
-                $str['message']="ONLY 1 TO 5 DIGIT ALLOWED";
-                return $str;
-            }
+            // }
+            // else
+            // {
+            //     $str['status']=false;
+            //     $str['message']="ONLY 1 TO 5 DIGIT ALLOWED";
+            //     return $str;
+            // }
         }
     }
 
