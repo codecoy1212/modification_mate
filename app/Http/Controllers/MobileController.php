@@ -541,6 +541,9 @@ class MobileController extends Controller
                     $vbl2->notification_type = $vbl8->notification_type;
                 }
 
+                $vbl333 = $request->user();
+                $vbl2->device_token = $vbl333->device_token;
+
                 $str['data']['task_details']= $vbl2;
                 $str['data']['sub_goals']= $vbl3;
                 return $str;
@@ -578,6 +581,9 @@ class MobileController extends Controller
                     $vbl2->notification_type = $vbl8->notification_type;
                 }
 
+                $vbl333 = $request->user();
+                $vbl2->device_token = $vbl333->device_token;
+
                 $str['data']['task_details']= $vbl2;
                 $str['data']['sub_goals']= $vbl3;
                 return $str;
@@ -609,6 +615,9 @@ class MobileController extends Controller
                     // return $vbl8;
                     $vbl2->notification_type = $vbl8->notification_type;
                 }
+
+                $vbl333 = $request->user();
+                $vbl2->device_token = $vbl333->device_token;
 
                 $str['data']['task_details']= $vbl2;
                 $str['data']['sub_goals']= $vbl3;
