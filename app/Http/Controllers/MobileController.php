@@ -86,6 +86,13 @@ class MobileController extends Controller
     {
         // return "hello";
 
+        if($request->device_token == null || $request->device_token == "")
+        {
+            $str['status']=false;
+            $str['message']="DEVICE TOKEN REQUIRED";
+            return $str;
+        }
+
         $eml = $request->email;
         $pwd = $request->password;
         $dbpwd = "";
@@ -96,6 +103,9 @@ class MobileController extends Controller
         {
             if($pwd == $verification->password)                  //main directory is here
             {
+                $verification->device_token = $request->device_token;
+                $verification->update();
+
                 $token = $verification->createToken($verification->email)->plainTextToken;
 
                 $dbpwd = $verification->password;
@@ -880,6 +890,8 @@ class MobileController extends Controller
                     $vbl5 = Task::find($vbl3->id);
                     $vbl5->task_status = "COMPLETED";
                     $vbl5->save();
+
+                    Notification::where('task_id',$vbl3->id)->where('notification_type',"ACCEPT")->delete();
                 }
 
                 $str['status']=true;

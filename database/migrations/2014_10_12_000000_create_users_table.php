@@ -20,6 +20,7 @@ class CreateUsersTable extends Migration
             $table->string('username')->unique();
             $table->string('password');
             $table->string('picture');
+            $table->longText('device_token')->default("EMPTY_STRING");
             $table->timestamps();
         });
     }
