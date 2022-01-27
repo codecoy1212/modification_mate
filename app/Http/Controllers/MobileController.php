@@ -934,7 +934,7 @@ class MobileController extends Controller
                 {
                     // echo $sum."\n";
                     $sum = $sum/count($vbl3);
-                    $value->given_rating = $sum;
+                    $value->given_rating = number_format($sum,1);
                     array_push($arr,$value);
 
                     $i = 0;
