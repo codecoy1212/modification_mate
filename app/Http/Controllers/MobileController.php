@@ -382,6 +382,7 @@ class MobileController extends Controller
 
                 $str['status']=true;
                 $str['message']="NEW TASK CREATED & SENT (PENDING).";
+                $str['task_id']=$var->id;
                 return $str;
             }
             else
