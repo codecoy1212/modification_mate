@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\ForgetPassJob;
+use App\Mail\ForgetPassMail;
 use App\Models\Feedback;
 use App\Models\Notification;
 use App\Models\SubGoal;
 use App\Models\Task;
 use App\Models\User;
 use App\Models\UserTask;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -939,6 +942,7 @@ class MobileController extends Controller
         // $vbl2 = UserTask::where('to_user',$request->user_id)->get();
         $vbl2 = DB::table('tasks')
         ->where('to_user','=',$request->user_id)
+        ->orWhere('from_user','=',$request->user_id)
         ->where(function($q){
             $q->where('task_status','=',"COMPLETED");
             // ->orWhere('task_status','=',"R_PENDING");
@@ -1138,6 +1142,50 @@ class MobileController extends Controller
             $str['status']=true;
             $str['message']="ALL NOTIFICATIONS SHOWN";
             $str['data']=$vbl;
+            return $str;
+        }
+    }
+
+    public function forget_pass(Request $request)
+    {
+        // return $request;
+
+        $vbl = User::where('email',$request->email)->first();
+
+        if(empty($vbl))
+        {
+            $str['status']=false;
+            $str['message']="USER EMAIL NOT REGISTERED";
+            return $str;
+        }
+        else
+        {
+            $alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
+            $pass = array(); //remember to declare $pass as an array
+            $alphaLength = strlen($alphabet) - 1; //put the length -1 in cache
+            for ($i = 0; $i < 12; $i++) {
+                $n = rand(0, $alphaLength);
+                $pass[] = $alphabet[$n];
+            }
+
+            $new_pass = implode($pass);
+            // return $new_pass;
+
+            $vbl->password = $new_pass;
+            $vbl->update();
+
+            // return $vbl;
+
+            // $details = [
+            //     'to_user' => "atillawall@gmail.com",
+            //     'body' => "This is the Description of my Subject."
+            // ];
+
+            // ForgetPassJob::dispatch(new ForgetPassJob($details))->delay(Carbon::now()->addSeconds(30));
+            ForgetPassJob::dispatch($vbl);     //for urgent mail
+
+            $str['status']=true;
+            $str['message']="EMAIL SENT";
             return $str;
         }
     }

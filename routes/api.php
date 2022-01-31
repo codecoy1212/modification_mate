@@ -26,6 +26,7 @@ Route::group(['middleware' => 'auth:sanctum'], function(){
     Route::get('mobile/profile/show',[MobileController::class,'profile']);
     Route::post('mobile/profile/update',[MobileController::class,'profile_updated']);
     Route::post('mobile/profile/update/password',[MobileController::class,'password_update']);
+    Route::post('mobile/forget_password',[MobileController::class,'forget_pass']);
 
     #tasks
     Route::post('mobile/tasks/add',[MobileController::class,'add_task']);
