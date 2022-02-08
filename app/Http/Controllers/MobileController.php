@@ -712,6 +712,11 @@ class MobileController extends Controller
             $vbl3 = Feedback::where('sub_goal_id',$vbl2->id)->get();
             // return $vbl3;
 
+            $vbl5 = Task::find($vbl2->task_id);
+            // return $vbl5;
+            // $vbl2->from_user = $vbl5->from_user;
+            // $vbl2->to_user = $vbl5->to_user;
+
             foreach ($vbl3 as $value) {
                 // echo $value->created_at;
                 $time = date('H:i',strtotime($value->created_at));
@@ -725,6 +730,8 @@ class MobileController extends Controller
             {
                 $str['status']=true;
                 $str['message'] = "SUB GOALS WITH FEEDBACKS SHOWN";
+                $str['data']['from_user'] = $vbl5->from_user;
+                $str['data']['to_user'] = $vbl5->to_user;
                 $str['data']['sub_goal_details'] = $vbl2;
                 $str['data']['sub_goal_feedbacks_list']['status'] = false;
                 $str['data']['sub_goal_feedbacks_list']['message'] = "NO FEEDBACKS ADDED YET";
@@ -733,6 +740,8 @@ class MobileController extends Controller
 
             $str['status']=true;
             $str['message']="SUB GOALS WITH FEEDBACKS SHOWN";
+            $str['data']['from_user'] = $vbl5->from_user;
+            $str['data']['to_user'] = $vbl5->to_user;
             $str['data']['sub_goal_details']= $vbl2;
             $str['data']['sub_goal_feedbacks_list']= $vbl3;
             return $str;
