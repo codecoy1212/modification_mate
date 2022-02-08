@@ -733,8 +733,7 @@ class MobileController extends Controller
                 $str['data']['from_user'] = $vbl5->from_user;
                 $str['data']['to_user'] = $vbl5->to_user;
                 $str['data']['sub_goal_details'] = $vbl2;
-                $str['data']['sub_goal_feedbacks_list']['status'] = false;
-                $str['data']['sub_goal_feedbacks_list']['message'] = "NO FEEDBACKS ADDED YET";
+                $str['data']['sub_goal_feedbacks_list'] = [];
                 return $str;
             }
 
