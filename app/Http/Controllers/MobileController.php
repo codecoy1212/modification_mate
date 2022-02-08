@@ -960,11 +960,9 @@ class MobileController extends Controller
         $vbl2 = DB::table('tasks')
         ->orderBy('tasks.id', 'desc')
         ->where('to_user','=',$request->user_id)
+        ->where('task_status','=',"COMPLETED")
         ->orWhere('from_user','=',$request->user_id)
-        ->where(function($q){
-            $q->where('task_status','=',"COMPLETED");
-            // ->orWhere('task_status','=',"R_PENDING");
-        })
+        ->where('task_status','=',"COMPLETED")
         ->select('tasks.*')
         ->get();
 
