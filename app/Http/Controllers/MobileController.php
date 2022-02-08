@@ -958,6 +958,7 @@ class MobileController extends Controller
         }
         // $vbl2 = UserTask::where('to_user',$request->user_id)->get();
         $vbl2 = DB::table('tasks')
+        ->orderBy('tasks.id', 'desc')
         ->where('to_user','=',$request->user_id)
         ->orWhere('from_user','=',$request->user_id)
         ->where(function($q){
