@@ -712,6 +712,15 @@ class MobileController extends Controller
             $vbl3 = Feedback::where('sub_goal_id',$vbl2->id)->get();
             // return $vbl3;
 
+            foreach ($vbl3 as $value) {
+                // echo $value->created_at;
+                $time = date('h:i A',strtotime($value->created_at));
+                $date = date('Y-m-d',strtotime($value->created_at));
+                $value->time =  $time;
+                $value->date =  $date;
+                // return array($time,$date);
+            }
+
             if(count($vbl3) == 0)
             {
                 $str['status']=true;
