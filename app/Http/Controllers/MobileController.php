@@ -714,8 +714,8 @@ class MobileController extends Controller
 
             foreach ($vbl3 as $value) {
                 // echo $value->created_at;
-                $time = date('h:i A',strtotime($value->created_at));
-                $date = date('Y-m-d',strtotime($value->created_at));
+                $time = date('H:i',strtotime($value->created_at));
+                $date = date('d-m-Y',strtotime($value->created_at));
                 $value->time =  $time;
                 $value->date =  $date;
                 // return array($time,$date);
