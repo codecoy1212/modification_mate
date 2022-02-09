@@ -972,9 +972,15 @@ class MobileController extends Controller
         foreach ($vbl2 as $value) {
             $vbl3 = SubGoal::where('task_id',$value->id)->get();
             foreach ($vbl3 as $value2) {
+                // return $value->from_user;
                 if($value2->rating == 0)
                 {
                     $value->given_rating = 0;
+                    $user1 = User::find($value->to_user);
+                    $user2 = User::find($value->from_user);
+                    // return $user1;
+                    $value->to_user_name = $user1->name;
+                    $value->from_user_name = $user2->name;
                     array_push($arr,$value);
                     break;
                 }
@@ -986,6 +992,12 @@ class MobileController extends Controller
                     // echo $sum."\n";
                     $sum = $sum/count($vbl3);
                     $value->given_rating = number_format($sum,1);
+
+                    $user1 = User::find($value->to_user);
+                    $user2 = User::find($value->from_user);
+                    $value->to_user_name = $user1->name;
+                    $value->from_user_name = $user2->name;
+
                     array_push($arr,$value);
 
                     $i = 0;
