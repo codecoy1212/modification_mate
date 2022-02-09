@@ -180,7 +180,8 @@ class MobileController extends Controller
         }
         else
         {
-            $request->user()->currentAccessToken()->delete();
+            // $request->user()->currentAccessToken()->delete();
+            $request->user()->tokens()->delete();
             $str['status']=true;
             $str['message']="USER LOG OUT SUCCESSFULL";
             return $str;
