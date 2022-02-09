@@ -548,8 +548,11 @@ class MobileController extends Controller
                 $vbl333 = User::find($vbl2->from_user);
                 $vbl2->from_device_token = $vbl333->device_token;
 
-                $vbl333 = User::find($vbl2->to_user);
-                $vbl2->to_device_token = $vbl333->device_token;
+                $vbl334 = User::find($vbl2->to_user);
+                $vbl2->to_device_token = $vbl334->device_token;
+
+                $vbl2->to_user_name = $vbl334->name;
+                $vbl2->from_user_name = $vbl333->name;
 
                 $str['data']['task_details']= $vbl2;
                 $str['data']['sub_goals']= $vbl3;
@@ -585,14 +588,20 @@ class MobileController extends Controller
                 {
                     $vbl8 = Notification::where('task_id',$vbl2->id)->where('notification_type',"RATING")->first();
                     // return $vbl8;
+                    if(!empty($vbl8))
                     $vbl2->notification_type = $vbl8->notification_type;
+                    else
+                    $vbl2->notification_type = "RATING";
                 }
 
                 $vbl333 = User::find($vbl2->from_user);
                 $vbl2->from_device_token = $vbl333->device_token;
 
-                $vbl333 = User::find($vbl2->to_user);
-                $vbl2->to_device_token = $vbl333->device_token;
+                $vbl334 = User::find($vbl2->to_user);
+                $vbl2->to_device_token = $vbl334->device_token;
+
+                $vbl2->to_user_name = $vbl334->name;
+                $vbl2->from_user_name = $vbl333->name;
 
                 $str['data']['task_details']= $vbl2;
                 $str['data']['sub_goals']= $vbl3;
@@ -629,8 +638,11 @@ class MobileController extends Controller
                 $vbl333 = User::find($vbl2->from_user);
                 $vbl2->from_device_token = $vbl333->device_token;
 
-                $vbl333 = User::find($vbl2->to_user);
-                $vbl2->to_device_token = $vbl333->device_token;
+                $vbl334 = User::find($vbl2->to_user);
+                $vbl2->to_device_token = $vbl334->device_token;
+
+                $vbl2->to_user_name = $vbl334->name;
+                $vbl2->from_user_name = $vbl333->name;
 
                 $str['data']['task_details']= $vbl2;
                 $str['data']['sub_goals']= $vbl3;
@@ -977,11 +989,11 @@ class MobileController extends Controller
                 if($value2->rating == 0)
                 {
                     $value->given_rating = 0;
-                    $user1 = User::find($value->to_user);
-                    $user2 = User::find($value->from_user);
+                    // $user1 = User::find($value->to_user);
+                    // $user2 = User::find($value->from_user);
                     // return $user1;
-                    $value->to_user_name = $user1->name;
-                    $value->from_user_name = $user2->name;
+                    // $value->to_user_name = $user1->name;
+                    // $value->from_user_name = $user2->name;
                     array_push($arr,$value);
                     break;
                 }
@@ -994,10 +1006,10 @@ class MobileController extends Controller
                     $sum = $sum/count($vbl3);
                     $value->given_rating = number_format($sum,1);
 
-                    $user1 = User::find($value->to_user);
-                    $user2 = User::find($value->from_user);
-                    $value->to_user_name = $user1->name;
-                    $value->from_user_name = $user2->name;
+                    // $user1 = User::find($value->to_user);
+                    // $user2 = User::find($value->from_user);
+                    // $value->to_user_name = $user1->name;
+                    // $value->from_user_name = $user2->name;
 
                     array_push($arr,$value);
 
